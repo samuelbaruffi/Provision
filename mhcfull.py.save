@@ -1,0 +1,257 @@
+# Working script
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from threading import Thread
+import csv
+import os
+import re
+import time
+
+class configgerer():
+
+    def connect(self, configURL, ip):
+        self.configURL = configURL
+        self.ip = ip
+      
+  p = webdriver.FirefoxProfile()
+        p.set_preference('webdriver.log.file','/tmp/firefox_console')
+        self.driver = webdriver.Firefox(p)
+        self.driver.get(self.configURL)
+
+zxv    def disconnect(self):
+        self.driver.quit()
+
+    def getMac(self):admin	
+        driver = self.driver
+        settingButtonXpath = "//a[@href='/cgi-bin/webif/system-info.sh']"
+        settingButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(settingButtonXpath))
+        settingButtonEle.click()
+        return(self.driver.find_element_by_xpath("//div[@id='content']/div[3]/table[2]/tbody/tr[3]/td[4]").text)
+
+    def getFirmware(self):
+        driver = self.driver
+        maintenanceButtonXpath = ".//*[@id='submenu']/li[5]/a"
+        maintenanceButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(maintenanceButtonXpath))
+        maintenanceButtonEle.click()
+        return(self.driver.find_element_by_xpath("//div[@id='content']/div/table[2]/tbody/tr[2]/td[4]").text)
+
+    def checkPage(self):
+        print(WebDriverWait(self.driver, 10).until(EC.title_contains("Summary")))
+
+    def uploadConfig(self,configurationFilePath):
+        driver = self.driver
+        
+        #go to Maintanence window
+        maintenanceButtonXpath = ".//*[@id='submenu']/li[5]/a"
+        maintenanceButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(maintenanceButtonXpath))
+        maintenanceButtonEle.click()
+        
+        #upload the path to the file 
+        uploadConfigButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name("configfile"))
+        uploadConfigButtonEle.send_keys(configurationFilePath)
+        
+        #click the "Restore" button
+        uploadConfigConfirmButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name("chkconfig"))
+        uploadConfigConfirmButtonEle.click()
+    
+        #Reconfirming the "Restore" button
+        uploadConfigRestoreButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name("instconfig"))
+        uploadConfigRestoreButtonEle.click()
+
+
+    def setHostname(self, name, desc):
+        driver = self.driver
+        hostname=name
+        
+        #Change to the Settings tab in a Microhard
+        settingButtonXpath = "//a[@href='/cgi-bin/webif/system-settings.sh']"
+        settingButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(settingButtonXpath))
+        settingButtonEle.click()
+        
+        #Change Hostname Field
+        hostnameFieldXpath = "//input[@name='hostname']"
+        hostanmeFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(hostnameFieldXpath))
+        hostanmeFieldElement.clear()
+        hostanmeFieldElement.send_keys(hostname)
+        
+        fieldXpath = "//input[@name='description']"
+        fieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(fieldXpath))
+        fieldElement.clear()
+        fieldElement.send_keys(desc)
+
+        #Submit the change, like a commit
+        commitFieldXpath = "//a[@href='#'][@id='waitbox']"
+        commitFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(commitFieldXpath))
+        commitFieldElement.click()
+
+    def setDesc(self, name):
+        driver = self.driver
+        desc=name
+        print(desc)
+        print("Change to the Settings tab in a Microhard")
+        settingButtonXpath = "//a[@href='/cgi-bin/webif/system-settings.sh']"
+        settingButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(settingButtonXpath))
+        settingButtonEle.click()
+        
+        print("Change Hostname Field")
+        fieldXpath = "//input[@name='description']"
+        fieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(fieldXpath))
+        fieldElement.clear()
+        fieldElement.send_keys(desc)
+        
+        print("Submit the change, like a commit")
+        commitFieldXpath = "//a[@href='#'][@id='waitbox']"
+        commitFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(commitFieldXpath))
+        commitFieldElement.click()
+
+    def setSSID(self, name):
+        driver = self.driver
+        ssid=name
+        
+        #Change to the Wireless tab
+        wirelessButtonXpath = "Wireless"
+        wirelessElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_link_text(wirelessButtonXpath))
+        wirelessElement.click()
+        
+        #Change to the Settings tab in a Microhard
+        settingButtonXpath = "//a[@href='/cgi-bin/webif/wireless-wlan0.sh']"
+        settingButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(settingButtonXpath))
+        settingButtonEle.click()
+        
+        #Change Hostname Field
+        ssidFieldXpath = "//*[@id='ssid_0']"
+        ssidFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(ssidFieldXpath))
+        ssidFieldElement.clear()
+        ssidFieldElement.send_keys(ssid)
+        
+        #Submit the change, like a commit
+        commitFieldXpath = "//a[@href='#'][@id='waitbox']"
+        commitFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(commitFieldXpath))
+        commitFieldElement.click()
+
+    def setRadiusID(self, name):
+        driver = self.driver
+        radiusID=name
+        
+        #Change to the Wireless tab
+        wirelessButtonXpath = "Wireless"
+        wirelessElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_link_text(wirelessButtonXpath))
+        wirelessElement.click()
+        
+        #Change to the Settings tab in a Microhard
+        settingButtonXpath = "//a[@href='/cgi-bin/webif/coova-chilli.sh']"
+        settingButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(settingButtonXpath))
+        settingButtonEle.click()
+        
+        #Change Hostname Field
+        radiusIDFieldXpath = "coova_chilli_coova_nasid"
+        radiusIDFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name(radiusIDFieldXpath))
+        radiusIDFieldElement.clear()
+        radiusIDFieldElement.send_keys(radiusID)
+        
+        #Submit the change, like a commit
+        commitFieldXpath = "//a[@href='#'][@id='waitbox']"
+        commitFieldElement = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(commitFieldXpath))
+        commitFieldElement.click()
+
+class databaser():
+    def readFile(self):
+       self.book = {}
+       with open('FWP.csv') as csvfile:
+           reader = csv.DictReader(csvfile)
+           for row in reader:
+               self.book[row['MAC']] = row
+
+    def getDevice(self, mac):
+        m = re.sub(r':','', mac) 
+        dev = self.book[m]
+        return dev
+
+
+class logger():
+    def openLog(self):
+        self.log = {}
+
+    def addToLog(self, type, item):
+        self.log[type] = item
+
+    def writeToLog(self):
+        self.log['MAC']
+
+#class portListener(threading.Thread):
+
+def run(ip, db):
+    print("======== " + ip + " thread starting")
+    while True:
+        try:
+            print("******** " + ip + " loading")
+
+            configURL = 'http://admin:admin@' + ip + '/'
+            device = configgerer()
+            device.connect(configURL, ip)
+            firmware = device.getFirmware()
+        except:
+            print("........ Retrying ......... ")
+        try:            
+
+            print("++++++++ " + ip + " : " + firmware + "++++++++ Uploading Configuration")
+            if firmware != "v1.1.0 build 1086-20150421-new-feature":
+                print("XXXXXXXX " + ip + " FIRMWARE FAIL!!!")
+                break
+
+            device.uploadConfig("/support/microhard/microhard_provision/FWConfig.config")
+            time.sleep(120)
+            time.sleep(120)
+
+            device.disconnect()
+        except:
+            print("XXXXXXXX " + ip + " CONFIGURATION FAIL!!!")
+            break
+        try:
+            configURL = 'http://admin:!Cm@fW5102@' + ip + ':8081/'
+            device2 = configgerer()
+            device2.connect(configURL, ip)
+
+            MAC = device2.getMac()
+            devinfo = db.getDevice(MAC)
+
+            print("++++++++ " + ip + " : " + MAC + "++++++++ Setting Settings")
+
+                    # Hostname & Description
+            device2.setHostname(devinfo["HOSTNAME"], devinfo["DESCRIPTION"])
+            time.sleep(30)
+                    # SSID
+            device2.setSSID(devinfo["SSID"])
+            time.sleep(80)
+                    # NASID
+            device2.setRadiusID(devinfo["NASID"])
+            time.sleep(60)
+
+            device2.disconnect()
+            print("******** " + ip + " complete.")
+            print("------------------------------------------------------------------------------")
+            break
+        except:
+            print("XXXXXXXX  " + ip + " SETTINGS FAIL!!!")
+            break
+            #i = True
+
+def main():
+    IPs = ["10.254.0.3","10.254.0.19","10.254.0.35","10.254.0.51","10.254.0.67","10.254.0.83","10.254.0.99","10.254.4.3","10.254.4.19","10.254.4.35","10.254.4.51","10.254.4.67"]    
+    ts = []
+    db = databaser()
+    db.readFile()
+    for ip in IPs:
+        t = Thread(target=run, args=(ip, db))
+        ts.append(t)
+        t.start()
+    #for tr in ts:
+        
+
+
+if __name__=='__main__':main()
+
+
+
+
