@@ -56,7 +56,7 @@ class configgerer():
     def checkPage(self):
         print(WebDriverWait(self.driver, 10).until(EC.title_contains("Summary")))
 
-    def upgradeFirmware(self, firmware="/Users/sambaruffi/Downloads/PWii-v1_3_0-r1012.bin"):
+    def upgradeFirmware(self, firmware="/Users/sam/Dropbox/Git/Provision/PWii-v1_3_0-r1012.bin"):
         driver = self.driver
         #print(firmware)
         #Move to Maintanence Page
@@ -259,7 +259,7 @@ def run(ip, db):
         if i < 2:
             try:
                 print("++++++++ " + ip + " UPLOADING CONFIGURATION")
-                device.uploadConfig("/Users/sambaruffi/Dropbox/Colony/Vancouver Taxi/VanTaxi-MicrohardBulletPlus (February 23rd, 2016).config")
+                device.uploadConfig("/Users/sam/Dropbox/Git/Provision/VanTaxi-MicrohardBulletPlus (February 23rd, 2016).config")
                 print("******** " + ip + " SLEEPING FOR 2 MINUTES UNTIL CONFIG IS APPLIED")
                 time.sleep(80)
                 device.disconnect()
