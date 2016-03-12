@@ -9,6 +9,7 @@ import csv
 import os
 import re
 import time
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class configgerer():
@@ -45,7 +46,11 @@ class configgerer():
         settingButtonEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(settingButtonXpath))
         settingButtonEle.click()
         return(self.driver.find_element_by_xpath("//div[@id='content']/div[2]/table[9]/tbody/tr/td[2]").text)
-
+    
+    def getModule(self):
+        driver = self.driver
+        return(self.driver.find_element_by_xpath("//img[@src='/images/information.jpg']").get_attribute("title"))    
+    
     def getFirmware(self):
         driver = self.driver
         maintenanceButtonXpath = "//a[@href='/cgi-bin/webif/system-info.sh']"
@@ -55,6 +60,17 @@ class configgerer():
 
     def checkPage(self):
         print(WebDriverWait(self.driver, 10).until(EC.title_contains("Summary")))
+
+    def upgradeModule (self,modulelocation):
+        driver = self.driver
+        #upload the file
+        uploadButtonModuleEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_id("upgradefile"))
+        uploadButtonModuleEle.send_keys(modulelocation)
+        #click upgrade 
+        upgradeButtonModuleEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name("upgrade"))
+        upgradeButtonModuleEle.click()
+        
+        element = WebDriverWait(driver, 900).until(EC.title_contains("Summary"))
 
     def upgradeFirmware(self, firmware="/Users/sam/Dropbox/Git/Provision/PWii-v1_3_0-r1012.bin"):
         driver = self.driver
@@ -238,6 +254,7 @@ def run(ip, db):
                 device = configgerer()
                 device.connect(configURL, ip)
                 firmware = device.getFirmware()
+                module = device.getModule()
             except:
                 print("........ " + ip + " down ......... Retrying ........")
                 continue
@@ -252,22 +269,40 @@ def run(ip, db):
                 if firmware_after != "1012":
                     print("XXXXXXXX " + ip + " FIRMWARE FAIL!!!")
                     break
+                device.disconnect()
                 i = 1
             except:
                 print("XXXXXXXX " + ip  + " UPGRADE FAIL")
                 continue
         if i < 2:
             try:
+                print("******** " + ip + " " + module)
+                
+                configURL = 'http://admin:admin@' + ip + ':8081/cgi-bin/webif/module-upgrade.sh'
+                device3 = configgerer()
+                device3.connect(configURL, ip)
+                if str(module) != str('unicode: Module LN930 FW: FIH7160_V1.1_WW_01.1446.01_AT FIH7160_XMM7160_V1.1_MBIM_GNSS_NAND_ADAPT_REV_4.5 2015-May-22 11:35:36'):
+                    print("++++++++ " + ip + " UPGRADING MODULE")
+                    device3.upgradeModule("/Users/sam/Documents/Firmwares/Microhard Bullet+/LN930-firmware-mhs-icmp-signed-1446-01.tar.gz")
+                else:
+                    print("******** " + ip + " Module already on the correct version")
+                i=2
+            except:
+                print("XXXXXXXX " + ip + " MODULE UPGRADE FAIL")
+                device3.disconnect()
+                continue   
+        if i < 3:
+            try:
                 print("++++++++ " + ip + " UPLOADING CONFIGURATION")
-                device.uploadConfig("/Users/sam/Dropbox/Git/Provision/VanTaxi-MicrohardBulletPlus (February 23rd, 2016).config")
+                device3.uploadConfig("/Users/sam/Dropbox/Colony/Vancouver Taxi/VanTaxi-MicrohardBulletPlus (February 23rd, 2016).config")
                 print("******** " + ip + " SLEEPING FOR 2 MINUTES UNTIL CONFIG IS APPLIED")
                 time.sleep(80)
-                device.disconnect()
-                i = 2
+                device3.disconnect()
+                i = 3
             except:
                 print("XXXXXXXX " + ip + " CONFIGURATION FAIL")
                 continue
-        if i < 3:  
+        if i < 4:  
             try:
                 configURL = 'http://admin:admin@' + ip + ':8081/'
                 device2 = configgerer()
@@ -313,14 +348,14 @@ def run(ip, db):
                 device2.disconnect()
                 time.sleep(40)
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** Configuration Complete")   
-                i = 3
+                i = 4
 
             except:
                 device2.disconnect()
                 print("XXXXXXXX  " + ip + " SETTINGS FAIL")
                 continue
 
-        if i < 4:
+        if i < 5:
             try:
                 configCheckURL = 'http://admin:admin' + PubIP + ':8081/'
                 device3 = configgerer()
@@ -333,7 +368,7 @@ def run(ip, db):
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** " + " Provisioning is COMPLETED")
                 print("------------------------------------------------------------------------------")
                 device3.disconnect()
-                i = 4
+                i = 5
             except:
                 device3.disconnect()
                 print("XXXXXXXX  " + ip + " TESTING FAIL")
@@ -388,7 +423,8 @@ def test3(ip):
     devinfo = db.getDevice(MAC)
 
 def main():
-    IPs = ["10.254.0.35","10.254.0.51","10.254.0.67"]
+    IPs = ["10.254.0.35"]
+    
     #IPs = ["10.254.0.3","10.254.0.19"]
     #IPs = ["10.254.0.3","10.254.0.19","10.254.0.35","10.254.0.51","10.254.0.67","10.254.0.83","10.254.0.99","10.254.4.3","10.254.4.19","10.254.4.35","10.254.4.51","10.254.4.67", "10.254.4.83", "10.254.4.99"]
             
