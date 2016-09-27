@@ -71,10 +71,14 @@ class configgerer():
         upgradeButtonModuleEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name("upgrade"))
         upgradeButtonModuleEle.click()
         
+<<<<<<< HEAD
 
         element = WebDriverWait(driver, 900).until(EC.presence_of_element_located((By.XPATH, "//div[@id='content']/div/div/table/tbody/tr/td/font")))
 
 
+=======
+        element = WebDriverWait(driver, 900).until(EC.title_contains("Summary"))
+>>>>>>> bf996660df2cf0d07b6614e46b4cbebee13fa861
 
     def upgradeFirmware(self, firmware="/Users/sam/Dropbox/Git/Provision/PWii-v1_3_0-r1012.bin"):
         driver = self.driver
@@ -280,6 +284,7 @@ def run(ip, db):
                 continue
         if i < 2:
             try:
+<<<<<<< HEAD
 
                 modulecorrect = ('Module LN930 FW: FIH7160_V1.1_WW_01.1446.01_AT FIH7160_XMM7160_V1.1_MBIM_GNSS_NAND_ADAPT_REV_4.5 2015-May-22 11:35:36')
                 print("******** " + ip + " " + module)
@@ -299,6 +304,8 @@ def run(ip, db):
                     print("++++++++ " + ip + " UPGRADING MODULE")
                     device3.upgradeModule("/Users/sam/Documents/Firmwares/Microhard Bullet+/LN930-firmware-mhs-icmp-signed-1446-01.tar.gz")
 
+=======
+>>>>>>> bf996660df2cf0d07b6614e46b4cbebee13fa861
                 print("******** " + ip + " " + module)
                 
                 configURL = 'http://admin:admin@' + ip + ':8081/cgi-bin/webif/module-upgrade.sh'
@@ -309,7 +316,10 @@ def run(ip, db):
                     device3.upgradeModule("/Users/sam/Documents/Firmwares/Microhard Bullet+/LN930-firmware-mhs-icmp-signed-1446-01.tar.gz")
                 else:
                     print("******** " + ip + " Module already on the correct version")
+<<<<<<< HEAD
 
+=======
+>>>>>>> bf996660df2cf0d07b6614e46b4cbebee13fa861
                 i=2
             except:
                 print("XXXXXXXX " + ip + " MODULE UPGRADE FAIL")
@@ -392,8 +402,12 @@ def run(ip, db):
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** " +  " / Wifi Mac address = " + CheckWifiMAC)
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** " + " Provisioning is COMPLETED")
                 print("------------------------------------------------------------------------------")
+<<<<<<< HEAD
 
                 device4.disconnect()
+=======
+                device3.disconnect()
+>>>>>>> bf996660df2cf0d07b6614e46b4cbebee13fa861
                 i = 5
             except:
                 device4.disconnect()
