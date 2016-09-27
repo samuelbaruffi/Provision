@@ -4,6 +4,7 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from threading import Thread
 import csv
 import os
@@ -70,7 +71,10 @@ class configgerer():
         upgradeButtonModuleEle = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_name("upgrade"))
         upgradeButtonModuleEle.click()
         
-        element = WebDriverWait(driver, 900).until(EC.title_contains("Summary"))
+
+        element = WebDriverWait(driver, 900).until(EC.presence_of_element_located((By.XPATH, "//div[@id='content']/div/div/table/tbody/tr/td/font")))
+
+
 
     def upgradeFirmware(self, firmware="/Users/sam/Dropbox/Git/Provision/PWii-v1_3_0-r1012.bin"):
         driver = self.driver
@@ -276,6 +280,25 @@ def run(ip, db):
                 continue
         if i < 2:
             try:
+
+                modulecorrect = ('Module LN930 FW: FIH7160_V1.1_WW_01.1446.01_AT FIH7160_XMM7160_V1.1_MBIM_GNSS_NAND_ADAPT_REV_4.5 2015-May-22 11:35:36')
+                print("******** " + ip + " " + module)
+                configURL = 'http://admin:admin@' + ip + ':8081/cgi-bin/webif/module-upgrade.sh'
+                device3 = configgerer()
+                device3.connect(configURL, ip)
+        
+                modulestrcorrect = modulecorrect
+                modulestrcorrect = modulestrcorrect.replace(" ", "")
+                
+                modulestr = module.encode('utf-8')
+                modulestr = modulestr.replace(" ", "")
+                    
+                if modulestr == modulestrcorrect:
+                    print("******** " + ip + " Module already on the correct version")
+                else:
+                    print("++++++++ " + ip + " UPGRADING MODULE")
+                    device3.upgradeModule("/Users/sam/Documents/Firmwares/Microhard Bullet+/LN930-firmware-mhs-icmp-signed-1446-01.tar.gz")
+
                 print("******** " + ip + " " + module)
                 
                 configURL = 'http://admin:admin@' + ip + ':8081/cgi-bin/webif/module-upgrade.sh'
@@ -286,6 +309,7 @@ def run(ip, db):
                     device3.upgradeModule("/Users/sam/Documents/Firmwares/Microhard Bullet+/LN930-firmware-mhs-icmp-signed-1446-01.tar.gz")
                 else:
                     print("******** " + ip + " Module already on the correct version")
+
                 i=2
             except:
                 print("XXXXXXXX " + ip + " MODULE UPGRADE FAIL")
@@ -336,7 +360,7 @@ def run(ip, db):
                 print("++++++++ " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ++++++++ Setting HOSTNAME = " + devinfo["HOSTNAME"] + " / DESCRIPTION = " + devinfo["DESCRIPTION"])
                         # Hostname & Description
                 device2.setHostname(devinfo["HOSTNAME"], devinfo["DESCRIPTION"])
-                time.sleep(60)
+                time.sleep(20)
                         # SSID
                 #device2.setSSID(devinfo["SSID"])
                 #print("++++++++ " + devinfo["HOSTNAME"] + " : SSID")
@@ -346,7 +370,7 @@ def run(ip, db):
                 print("++++++++ " + ip + " " + devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ++++++++ Setting NASID = " + devinfo["NASID"])        
                 device2.setRadiusID(devinfo["NASID"])
                 device2.disconnect()
-                time.sleep(40)
+                time.sleep(20)
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** Configuration Complete")   
                 i = 4
 
@@ -357,20 +381,22 @@ def run(ip, db):
 
         if i < 5:
             try:
-                configCheckURL = 'http://admin:admin' + PubIP + ':8081/'
-                device3 = configgerer()
-                device3.connect(configURL, ip)
+                configCheckURL = 'http://admin:admin@' + PubIP + ':8081/'
+                device4 = configgerer()
+                device4.connect(configCheckURL, ip)
+                print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + " ******** GETTING INFO THROUGH PUBLIC IP" )
 
-                CheckEthMAC = device3.getMac()
+                CheckEthMAC = device4.getMac()
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** " +  " / Mac address = " + CheckEthMAC)
-                CheckWifiMAC = device3.getWifiMac()
+                CheckWifiMAC = device4.getWifiMac()
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** " +  " / Wifi Mac address = " + CheckWifiMAC)
                 print("******** " + ip + " " +  devinfo["HOSTNAME"] + " : " + ip + " : " + EthMAC + " ******** " + " Provisioning is COMPLETED")
                 print("------------------------------------------------------------------------------")
-                device3.disconnect()
+
+                device4.disconnect()
                 i = 5
             except:
-                device3.disconnect()
+                device4.disconnect()
                 print("XXXXXXXX  " + ip + " TESTING FAIL")
                 continue
 
